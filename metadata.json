@@ -1,0 +1,6 @@
+{
+  "name": "产品版本管理系统",
+  "description": "高效产品版本及下级RC版本生命周期管理平台，支持属性分组、优先级管理、进度看板及双向备份。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
