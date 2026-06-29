@@ -26,11 +26,15 @@ export interface SubVersion {
   branch: string; // e.g. "26.04", "26.04-CSY"
   componentVersion: string; // e.g. "ngpm-26.04.1.4"
   imageName: string; // e.g. "NGPM-N26040104-RC1"
-  buildLink: string; // e.g. "26.04.1.4-61843-meson"
-  buildLinkUrl?: string; // Optional actual URL
   jenkinsStatus?: 'idle' | 'building' | 'success' | 'failed'; // Jenkins trigger state
   jenkinsBuildLog?: string; // Live log content
-  ftpUrl?: string; // FTP package link
+  warVersion?: string;
+  jarVersion?: string;
+  frontendVersion?: string;
+  backendVersion?: string;
+  vprobeVersion?: string;
+  scriptVersion?: string;
+  bpmVersion?: string;
 }
 
 export type ViewType = 'major' | 'published' | 'dashboard';

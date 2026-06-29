@@ -18,6 +18,7 @@ interface MajorVersionTableProps {
   onDeleteSubVersion?: (subId: string) => void;
   onEditSubVersion?: (updatedSub: SubVersion) => void;
   hideAddButton?: boolean;
+  allOwners?: string[];
 }
 
 type GroupByField = 'priority' | 'owner' | 'none';
@@ -32,7 +33,8 @@ export default function MajorVersionTable({
   onAddSubVersion,
   onDeleteSubVersion,
   onEditSubVersion,
-  hideAddButton = false
+  hideAddButton = false,
+  allOwners = initialOwners
 }: MajorVersionTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [groupBy, setGroupBy] = useState<GroupByField>('none');
@@ -300,7 +302,7 @@ export default function MajorVersionTable({
               className="border border-gray-200 bg-slate-50 px-2 py-1 rounded-md text-gray-700 hover:bg-slate-100 focus:outline-hidden text-xs"
             >
               <option value="all">全部负责人</option>
-              {initialOwners.map(owner => (
+              {allOwners.map(owner => (
                 <option key={owner} value={owner}>{owner}</option>
               ))}
             </select>
@@ -561,15 +563,19 @@ export default function MajorVersionTable({
                                 <span className="w-5 h-5 rounded-full bg-blue-500 text-white font-semibold text-[9px] flex items-center justify-center shrink-0">
                                   {ownerAvatars[row.owner] || row.owner.slice(0, 2)}
                                 </span>
-                                <select
+                                <input
+                                  list={`owners-datalist-table-${row.id}`}
+                                  type="text"
                                   value={row.owner}
                                   onChange={(e) => onUpdateRow({ ...row, owner: e.target.value })}
-                                  className="bg-transparent hover:bg-slate-100/80 focus:bg-white border-0 hover:border hover:border-gray-200 focus:border focus:border-blue-400 rounded-md py-0.5 px-1 font-sans font-medium text-gray-700 cursor-pointer text-xs focus:ring-1 focus:ring-blue-500/10 focus:outline-hidden"
-                                >
-                                  {initialOwners.map((owner) => (
-                                    <option key={owner} value={owner}>{owner}</option>
+                                  className="bg-transparent hover:bg-slate-100/80 focus:bg-white border-0 hover:border hover:border-gray-200 focus:border focus:border-blue-400 rounded-md py-0.5 px-1 font-sans font-medium text-gray-700 text-xs focus:ring-1 focus:ring-blue-500/10 focus:outline-hidden w-24 transition"
+                                  placeholder="负责人..."
+                                />
+                                <datalist id={`owners-datalist-table-${row.id}`}>
+                                  {allOwners.map((owner) => (
+                                    <option key={owner} value={owner} />
                                   ))}
-                                </select>
+                                </datalist>
                               </div>
                             </td>
 
@@ -681,9 +687,13 @@ export default function MajorVersionTable({
                                             <th className="w-24 py-2.5 px-3 text-gray-600">代码分支</th>
                                             <th className="w-36 py-2.5 px-3 text-gray-600">组件版本</th>
                                             <th className="w-44 py-2.5 px-3 text-gray-600">下属容器镜像名称</th>
-                                            <th className="w-28 py-2.5 px-3 text-gray-600">构建包链接</th>
-                                            <th className="w-44 py-2.5 px-3 text-gray-600">编译构建 (Jenkins)</th>
-                                            <th className="w-36 py-2.5 px-3 text-gray-600">FTP 交付包</th>
+                                            <th className="w-28 py-2.5 px-3 text-gray-600">war版本</th>
+                                            <th className="w-28 py-2.5 px-3 text-gray-600">jar版本</th>
+                                            <th className="w-28 py-2.5 px-3 text-gray-600">前端版本</th>
+                                            <th className="w-28 py-2.5 px-3 text-gray-600">后台版本</th>
+                                            <th className="w-28 py-2.5 px-3 text-gray-600">vprobe版本</th>
+                                            <th className="w-28 py-2.5 px-3 text-gray-600">脚本版本</th>
+                                            <th className="w-28 py-2.5 px-3 text-gray-600">BPM 版本</th>
                                             <th className="w-20 py-2.5 px-2 text-center text-gray-400">操作</th>
                                           </tr>
                                         </thead>
@@ -756,26 +766,62 @@ export default function MajorVersionTable({
                                                       className="w-full text-[11px] px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
                                                     />
                                                   </td>
-                                                  <td className="p-1">
-                                                    <input
-                                                      type="text"
-                                                      value={editSubForm.buildLink}
-                                                      onChange={(e) => handleSubEditChange('buildLink', e.target.value)}
-                                                      className="w-full text-[11px] px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
-                                                    />
-                                                  </td>
-                                                  <td className="p-1 text-center text-gray-400">
-                                                    -
-                                                  </td>
-                                                  <td className="p-1">
-                                                    <input
-                                                      type="text"
-                                                      value={editSubForm.ftpUrl || ''}
-                                                      onChange={(e) => handleSubEditChange('ftpUrl', e.target.value)}
-                                                      placeholder="ftp://..."
-                                                      className="w-full text-[11px] px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
-                                                    />
-                                                  </td>
+                                                                                                     <td className="p-1">
+                                                     <input
+                                                       type="text"
+                                                       value={editSubForm.warVersion || ''}
+                                                       onChange={(e) => handleSubEditChange('warVersion', e.target.value)}
+                                                       className="w-full text-[11px] px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                                                     />
+                                                   </td>
+                                                   <td className="p-1">
+                                                     <input
+                                                       type="text"
+                                                       value={editSubForm.jarVersion || ''}
+                                                       onChange={(e) => handleSubEditChange('jarVersion', e.target.value)}
+                                                       className="w-full text-[11px] px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                                                     />
+                                                   </td>
+                                                   <td className="p-1">
+                                                     <input
+                                                       type="text"
+                                                       value={editSubForm.frontendVersion || ''}
+                                                       onChange={(e) => handleSubEditChange('frontendVersion', e.target.value)}
+                                                       className="w-full text-[11px] px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                                                     />
+                                                   </td>
+                                                   <td className="p-1">
+                                                     <input
+                                                       type="text"
+                                                       value={editSubForm.backendVersion || ''}
+                                                       onChange={(e) => handleSubEditChange('backendVersion', e.target.value)}
+                                                       className="w-full text-[11px] px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                                                     />
+                                                   </td>
+                                                   <td className="p-1">
+                                                     <input
+                                                       type="text"
+                                                       value={editSubForm.vprobeVersion || ''}
+                                                       onChange={(e) => handleSubEditChange('vprobeVersion', e.target.value)}
+                                                       className="w-full text-[11px] px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                                                     />
+                                                   </td>
+                                                   <td className="p-1">
+                                                     <input
+                                                       type="text"
+                                                       value={editSubForm.scriptVersion || ''}
+                                                       onChange={(e) => handleSubEditChange('scriptVersion', e.target.value)}
+                                                       className="w-full text-[11px] px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                                                     />
+                                                   </td>
+                                                   <td className="p-1">
+                                                     <input
+                                                       type="text"
+                                                       value={editSubForm.bpmVersion || ''}
+                                                       onChange={(e) => handleSubEditChange('bpmVersion', e.target.value)}
+                                                       className="w-full text-[11px] px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                                                     />
+                                                   </td>
                                                   <td className="p-1 text-center">
                                                     <div className="flex items-center justify-center gap-1">
                                                       <button
@@ -822,106 +868,13 @@ export default function MajorVersionTable({
                                                 <td className="py-2 px-3 text-gray-500 font-mono truncate" title={sub.imageName}>
                                                   {sub.imageName || '-'}
                                                 </td>
-                                                <td className="py-2 px-3">
-                                                  {sub.buildLink ? (
-                                                    <span 
-                                                      className="text-blue-600 hover:underline cursor-pointer font-mono truncate inline-block max-w-[120px]"
-                                                      title="点击复制构建编号"
-                                                      onClick={() => {
-                                                        navigator.clipboard.writeText(sub.buildLink);
-                                                        alert(`已复制构建包编号: ${sub.buildLink}`);
-                                                      }}
-                                                    >
-                                                      {sub.buildLink}
-                                                    </span>
-                                                  ) : (
-                                                    <span className="text-gray-300">-</span>
-                                                  )}
-                                                </td>
-                                                
-                                                {/* Jenkins Build Action */}
-                                                <td className="py-2 px-3">
-                                                  <div className="flex items-center gap-1.5">
-                                                    {sub.jenkinsStatus === 'building' ? (
-                                                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-amber-50 text-amber-700 border border-amber-200 text-[10px] animate-pulse">
-                                                        <Loader2 size={10} className="animate-spin text-amber-600 shrink-0" />
-                                                        <span>构建中...</span>
-                                                      </span>
-                                                    ) : sub.jenkinsStatus === 'success' ? (
-                                                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px]">
-                                                        <span>构建成功</span>
-                                                      </span>
-                                                    ) : sub.jenkinsStatus === 'failed' ? (
-                                                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-rose-50 text-rose-700 border border-rose-100 text-[10px]">
-                                                        <span>构建失败</span>
-                                                      </span>
-                                                    ) : (
-                                                      <span className="text-gray-400 text-[10px]">未构建</span>
-                                                    )}
-
-                                                    <div className="flex items-center gap-1">
-                                                      <button
-                                                        type="button"
-                                                        disabled={sub.jenkinsStatus === 'building'}
-                                                        onClick={() => handleTriggerBuild(sub.id)}
-                                                        className={`p-1 rounded-md transition ${
-                                                          sub.jenkinsStatus === 'building' 
-                                                            ? 'text-gray-300 bg-slate-100 cursor-not-allowed' 
-                                                            : 'text-blue-600 hover:bg-blue-50 hover:text-blue-700'
-                                                        }`}
-                                                        title={sub.jenkinsStatus ? "重新触发构建" : "一键触发 Jenkins 编译"}
-                                                      >
-                                                        <Play size={11} className={sub.jenkinsStatus === 'building' ? '' : 'fill-current'} />
-                                                      </button>
-
-                                                      {sub.jenkinsBuildLog && (
-                                                        <button
-                                                          type="button"
-                                                          onClick={() => {
-                                                            setActiveLogSubId(sub.id);
-                                                            setActiveLogContent(sub.jenkinsBuildLog || '');
-                                                          }}
-                                                          className="p-1 text-slate-500 hover:bg-slate-200 rounded-md transition"
-                                                          title="查看构建日志 (Terminal)"
-                                                        >
-                                                          <Terminal size={11} />
-                                                        </button>
-                                                      )}
-                                                    </div>
-                                                  </div>
-                                                </td>
-
-                                                {/* FTP download column */}
-                                                <td className="py-2 px-3">
-                                                  {sub.ftpUrl ? (
-                                                    <div className="flex items-center gap-1">
-                                                      <a
-                                                        href={sub.ftpUrl}
-                                                        target="_blank"
-                                                        referrerPolicy="no-referrer"
-                                                        rel="noreferrer"
-                                                        className="inline-flex items-center gap-0.5 text-blue-600 hover:text-blue-800 hover:underline font-medium text-[10px] truncate max-w-[120px]"
-                                                        title={`FTP 交付包: ${sub.ftpUrl}`}
-                                                      >
-                                                        <Download size={10} />
-                                                        <span>FTP交付包</span>
-                                                      </a>
-                                                      <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                          navigator.clipboard.writeText(sub.ftpUrl || '');
-                                                          alert('已复制 FTP 链接到剪贴板');
-                                                        }}
-                                                        className="p-0.5 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-600 shrink-0"
-                                                        title="复制 FTP 链接"
-                                                      >
-                                                        <Copy size={9} />
-                                                      </button>
-                                                    </div>
-                                                  ) : (
-                                                    <span className="text-gray-300 italic">未发布交付件</span>
-                                                  )}
-                                                </td>
+                                                 <td className="py-2 px-3 text-gray-500 font-mono">{sub.warVersion || '-'}</td>
+                                                 <td className="py-2 px-3 text-gray-500 font-mono">{sub.jarVersion || '-'}</td>
+                                                 <td className="py-2 px-3 text-gray-500 font-mono">{sub.frontendVersion || '-'}</td>
+                                                 <td className="py-2 px-3 text-gray-500 font-mono">{sub.backendVersion || '-'}</td>
+                                                 <td className="py-2 px-3 text-gray-500 font-mono">{sub.vprobeVersion || '-'}</td>
+                                                 <td className="py-2 px-3 text-gray-500 font-mono">{sub.scriptVersion || '-'}</td>
+                                                 <td className="py-2 px-3 text-gray-500 font-mono">{sub.bpmVersion || '-'}</td>
 
                                                 <td className="py-2 px-2 text-center">
                                                   <div className="flex items-center justify-center gap-1 opacity-0 group-hover/subrow:opacity-100 transition duration-150">

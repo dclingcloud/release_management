@@ -12,6 +12,7 @@ interface VersionDetailDrawerProps {
   onSaveSubVersion: (subVer: SubVersion) => void;
   onDeleteSubVersion: (subVerId: string) => void;
   onAddSubVersion: (majorVerId: string) => SubVersion | null;
+  allOwners?: string[];
 }
 
 export default function VersionDetailDrawer({
@@ -22,7 +23,8 @@ export default function VersionDetailDrawer({
   onSaveVersion,
   onSaveSubVersion,
   onDeleteSubVersion,
-  onAddSubVersion
+  onAddSubVersion,
+  allOwners = initialOwners
 }: VersionDetailDrawerProps) {
   if (!isOpen || !version) return null;
 
@@ -142,7 +144,7 @@ export default function VersionDetailDrawer({
               {formData.type || '未命名'}
             </span>
             <h2 className="text-lg font-semibold text-gray-900 tracking-tight">
-              {formData.versionNumber || '版本详情'}
+              {formData.versionNumber || '版本计划'}
             </h2>
           </div>
           <button 
@@ -243,15 +245,19 @@ export default function VersionDetailDrawer({
                 <label className="text-xs font-medium text-gray-500 flex items-center gap-1.5">
                   <User size={13} /> 负责人
                 </label>
-                <select
-                  value={formData.owner}
+                <input
+                  list="owners-datalist-drawer"
+                  type="text"
+                  value={formData.owner || ''}
                   onChange={(e) => handleChange('owner', e.target.value)}
-                  className="w-full text-sm px-3 py-2 border border-gray-200 rounded-md bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
-                >
-                  {initialOwners.map(owner => (
-                    <option key={owner} value={owner}>{owner}</option>
+                  className="w-full text-sm px-3 py-2 border border-gray-200 rounded-md bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-sans"
+                  placeholder="选择或输入负责人..."
+                />
+                <datalist id="owners-datalist-drawer">
+                  {allOwners.map(owner => (
+                    <option key={owner} value={owner} />
                   ))}
-                </select>
+                </datalist>
               </div>
 
               {/* Release Date */}
@@ -428,11 +434,65 @@ export default function VersionDetailDrawer({
                             />
                           </div>
                           <div>
-                            <label className="text-[11px] text-gray-500">构建构建链接 (Meson ID)</label>
+                            <label className="text-[11px] text-gray-500">war版本</label>
                             <input
                               type="text"
-                              value={subFormData.buildLink}
-                              onChange={(e) => handleSubChange('buildLink', e.target.value)}
+                              value={subFormData.warVersion || ''}
+                              onChange={(e) => handleSubChange('warVersion', e.target.value)}
+                              className="w-full text-xs px-2.5 py-1.5 border border-gray-200 rounded-md bg-white focus:outline-hidden font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-gray-500">jar版本</label>
+                            <input
+                              type="text"
+                              value={subFormData.jarVersion || ''}
+                              onChange={(e) => handleSubChange('jarVersion', e.target.value)}
+                              className="w-full text-xs px-2.5 py-1.5 border border-gray-200 rounded-md bg-white focus:outline-hidden font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-gray-500">前端版本</label>
+                            <input
+                              type="text"
+                              value={subFormData.frontendVersion || ''}
+                              onChange={(e) => handleSubChange('frontendVersion', e.target.value)}
+                              className="w-full text-xs px-2.5 py-1.5 border border-gray-200 rounded-md bg-white focus:outline-hidden font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-gray-500">后台版本</label>
+                            <input
+                              type="text"
+                              value={subFormData.backendVersion || ''}
+                              onChange={(e) => handleSubChange('backendVersion', e.target.value)}
+                              className="w-full text-xs px-2.5 py-1.5 border border-gray-200 rounded-md bg-white focus:outline-hidden font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-gray-500">vprobe版本</label>
+                            <input
+                              type="text"
+                              value={subFormData.vprobeVersion || ''}
+                              onChange={(e) => handleSubChange('vprobeVersion', e.target.value)}
+                              className="w-full text-xs px-2.5 py-1.5 border border-gray-200 rounded-md bg-white focus:outline-hidden font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-gray-500">脚本版本</label>
+                            <input
+                              type="text"
+                              value={subFormData.scriptVersion || ''}
+                              onChange={(e) => handleSubChange('scriptVersion', e.target.value)}
+                              className="w-full text-xs px-2.5 py-1.5 border border-gray-200 rounded-md bg-white focus:outline-hidden font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-gray-500">BPM 版本</label>
+                            <input
+                              type="text"
+                              value={subFormData.bpmVersion || ''}
+                              onChange={(e) => handleSubChange('bpmVersion', e.target.value)}
                               className="w-full text-xs px-2.5 py-1.5 border border-gray-200 rounded-md bg-white focus:outline-hidden font-mono"
                             />
                           </div>
@@ -488,18 +548,22 @@ export default function VersionDetailDrawer({
                           {sv.description || <span className="text-gray-300 italic">暂无需求/修复记录描述</span>}
                         </p>
 
-                        {(sv.imageName || sv.buildLink) && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 pt-1.5">
+                        {(sv.imageName || sv.warVersion || sv.jarVersion || sv.frontendVersion || sv.backendVersion || sv.vprobeVersion || sv.scriptVersion || sv.bpmVersion) && (
+                          <div className="space-y-1 pt-1.5 text-[10px] font-mono">
                             {sv.imageName && (
-                              <div className="text-[10px] text-gray-400 truncate font-mono">
+                              <div className="text-gray-400 truncate">
                                 镜像: <span className="text-gray-600 select-all">{sv.imageName}</span>
                               </div>
                             )}
-                            {sv.buildLink && (
-                              <div className="text-[10px] text-blue-500 hover:underline cursor-pointer truncate font-mono flex items-center gap-0.5">
-                                <ExternalLink size={10} /> 构建: {sv.buildLink}
-                              </div>
-                            )}
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-1 text-gray-400">
+                              {sv.warVersion && <div>WAR: <span className="text-gray-600 select-all">{sv.warVersion}</span></div>}
+                              {sv.jarVersion && <div>JAR: <span className="text-gray-600 select-all">{sv.jarVersion}</span></div>}
+                              {sv.frontendVersion && <div>前端: <span className="text-gray-600 select-all">{sv.frontendVersion}</span></div>}
+                              {sv.backendVersion && <div>后台: <span className="text-gray-600 select-all">{sv.backendVersion}</span></div>}
+                              {sv.vprobeVersion && <div>Vprobe: <span className="text-gray-600 select-all">{sv.vprobeVersion}</span></div>}
+                              {sv.scriptVersion && <div>脚本: <span className="text-gray-600 select-all">{sv.scriptVersion}</span></div>}
+                              {sv.bpmVersion && <div>BPM: <span className="text-gray-600 select-all">{sv.bpmVersion}</span></div>}
+                            </div>
                           </div>
                         )}
                       </div>

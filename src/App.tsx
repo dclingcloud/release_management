@@ -5,10 +5,11 @@ import {
   AlertCircle, ArrowRightLeft, FileJson, X
 } from 'lucide-react';
 import { MajorVersion, SubVersion, ViewType } from './types';
-import { initialMajorVersions, initialSubVersions } from './initialData';
+import { initialMajorVersions, initialSubVersions, initialOwners } from './initialData';
 import MajorVersionTable from './components/MajorVersionTable';
 import VersionDetailDrawer from './components/VersionDetailDrawer';
 import DashboardView from './components/DashboardView';
+import PublishedRoadmap from './components/PublishedRoadmap';
 
 const STORAGE_KEYS = {
   MAJOR_VERSIONS: 'pm_major_versions',
@@ -19,6 +20,53 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<ViewType>('major');
   const [majorVersions, setMajorVersions] = useState<MajorVersion[]>([]);
   const [subVersions, setSubVersions] = useState<SubVersion[]>([]);
+
+  // Persistent custom owners list
+  const [customOwners, setCustomOwners] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('pm_custom_owners');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {}
+    return [];
+  });
+
+  // Track and save any newly added owner to customOwners
+  useEffect(() => {
+    if (majorVersions.length === 0) return;
+    const newOwners: string[] = [];
+    majorVersions.forEach(v => {
+      if (v.owner) {
+        const trimmed = v.owner.trim();
+        if (trimmed && !initialOwners.includes(trimmed) && !customOwners.includes(trimmed)) {
+          newOwners.push(trimmed);
+        }
+      }
+    });
+
+    if (newOwners.length > 0) {
+      setCustomOwners(prev => {
+        const updated = Array.from(new Set([...prev, ...newOwners]));
+        try {
+          localStorage.setItem('pm_custom_owners', JSON.stringify(updated));
+        } catch (e) {}
+        return updated;
+      });
+    }
+  }, [majorVersions, customOwners]);
+
+  // Compute all unique owners dynamically (including newly typed ones)
+  const allOwners = React.useMemo(() => {
+    const set = new Set(initialOwners);
+    customOwners.forEach(o => {
+      if (o) set.add(o);
+    });
+    majorVersions.forEach(v => {
+      if (v.owner) set.add(v.owner.trim());
+    });
+    return Array.from(set);
+  }, [majorVersions, customOwners]);
   
   // Drawer state
   const [selectedVersion, setSelectedVersion] = useState<MajorVersion | null>(null);
@@ -205,7 +253,13 @@ export default function App() {
       branch: '',
       componentVersion: '',
       imageName: '',
-      buildLink: '',
+      warVersion: '',
+      jarVersion: '',
+      frontendVersion: '',
+      backendVersion: '',
+      vprobeVersion: '',
+      scriptVersion: '',
+      bpmVersion: '',
     };
 
     const newList = [...subVersions, newSub];
@@ -369,9 +423,6 @@ export default function App() {
             <h1 className="text-base font-bold text-gray-900 tracking-tight flex items-center gap-2">
               <span>产品版本生命周期管理平台</span>
             </h1>
-            <p className="text-[11px] text-gray-400 mt-0.5 font-sans">
-              精细化跟踪版本需求规划与下级测试 RC、容器镜像生命周期
-            </p>
           </div>
         </div>
 
@@ -386,7 +437,7 @@ export default function App() {
             }`}
           >
             <BarChart3 size={13} />
-            📊 进度仪表盘
+            进度仪表盘
           </button>
           
           <button
@@ -398,7 +449,7 @@ export default function App() {
             }`}
           >
             <FileSpreadsheet size={13} />
-            📁 版本详情
+            版本计划
           </button>
 
           <button
@@ -410,7 +461,7 @@ export default function App() {
             }`}
           >
             <CheckCircle2 size={13} />
-            📋 已发布记录
+            已发布记录
           </button>
         </div>
 
@@ -481,18 +532,23 @@ export default function App() {
               onAddSubVersion={handleAddSubVersion}
               onDeleteSubVersion={handleDeleteSubVersion}
               onEditSubVersion={handleSaveSubVersion}
+              allOwners={allOwners}
             />
           </div>
         )}
 
         {activeTab === 'published' && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <h2 className="text-base font-bold text-gray-900">已发布与交付记录</h2>
-                <p className="text-xs text-gray-400">已发布历史版本的归档记录，详细展示已发布版本进度及下级所有 RC版本。双击或点击抽屉可以查看详情。</p>
-              </div>
-            </div>
+          <div className="space-y-4">
+            {/* Version Roadmap Timeline */}
+            <PublishedRoadmap
+              versions={majorVersions}
+              subVersions={subVersions}
+              onVersionClick={(v) => {
+                setSelectedVersion(v);
+                setIsDrawerOpen(true);
+              }}
+            />
+
             <MajorVersionTable
               versions={majorVersions.filter(v => v.status === '已发布')}
               subVersions={subVersions}
@@ -507,6 +563,7 @@ export default function App() {
               onDeleteSubVersion={handleDeleteSubVersion}
               onEditSubVersion={handleSaveSubVersion}
               hideAddButton={true}
+              allOwners={allOwners}
             />
           </div>
         )}
@@ -526,6 +583,7 @@ export default function App() {
         onSaveSubVersion={handleSaveSubVersion}
         onDeleteSubVersion={handleDeleteSubVersion}
         onAddSubVersion={handleAddSubVersion}
+        allOwners={allOwners}
       />
 
       {/* Backup Import Dialog Modal */}

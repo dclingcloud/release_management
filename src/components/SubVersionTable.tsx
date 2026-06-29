@@ -41,7 +41,13 @@ export default function SubVersionTable({
         (s.branch || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (s.componentVersion || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (s.imageName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (s.buildLink || '').toLowerCase().includes(searchTerm.toLowerCase());
+        (s.warVersion || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (s.jarVersion || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (s.frontendVersion || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (s.backendVersion || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (s.vprobeVersion || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (s.scriptVersion || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (s.bpmVersion || '').toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesParent = selectedParent === 'all' || s.majorVersionId === selectedParent;
       const matchesStatus = selectedStatus === 'all' || s.status === selectedStatus;
@@ -176,7 +182,13 @@ export default function SubVersionTable({
                 <th className="w-28 py-3 px-3"><div className="flex items-center gap-1 text-gray-600"><Globe size={11} className="text-gray-400" />分支版本</div></th>
                 <th className="w-36 py-3 px-3"><div className="flex items-center gap-1 text-gray-600"><Type size={11} className="text-gray-400" />组件版本</div></th>
                 <th className="w-48 py-3 px-3"><div className="flex items-center gap-1 text-gray-600"><DownloadCloud size={11} className="text-gray-400" />容器镜像</div></th>
-                <th className="w-48 py-3 px-3"><div className="flex items-center gap-1 text-gray-600"><Link2 size={11} className="text-blue-500" />构建版本链接</div></th>
+                <th className="w-32 py-3 px-3"><div className="flex items-center gap-1 text-gray-600">war版本</div></th>
+                <th className="w-32 py-3 px-3"><div className="flex items-center gap-1 text-gray-600">jar版本</div></th>
+                <th className="w-32 py-3 px-3"><div className="flex items-center gap-1 text-gray-600">前端版本</div></th>
+                <th className="w-32 py-3 px-3"><div className="flex items-center gap-1 text-gray-600">后台版本</div></th>
+                <th className="w-32 py-3 px-3"><div className="flex items-center gap-1 text-gray-600">vprobe版本</div></th>
+                <th className="w-32 py-3 px-3"><div className="flex items-center gap-1 text-gray-600">脚本版本</div></th>
+                <th className="w-32 py-3 px-3"><div className="flex items-center gap-1 text-gray-600">BPM 版本</div></th>
                 <th className="w-24 py-3 px-3 text-center text-gray-400">操作</th>
               </tr>
             </thead>
@@ -193,7 +205,7 @@ export default function SubVersionTable({
                     
                     {/* Collapsible Group Header */}
                     <tr className="bg-slate-50 font-medium text-gray-600 border-t border-b border-gray-100">
-                      <td colSpan={11} className="py-2.5 px-3">
+                      <td colSpan={17} className="py-2.5 px-3">
                         <div className="flex items-center justify-between">
                           <button
                             type="button"
@@ -325,12 +337,59 @@ export default function SubVersionTable({
                               />
                             </td>
 
-                            {/* Edit: Build Link */}
                             <td className="p-1">
                               <input
                                 type="text"
-                                value={editForm.buildLink}
-                                onChange={(e) => handleEditChange('buildLink', e.target.value)}
+                                value={editForm.warVersion || ''}
+                                onChange={(e) => handleEditChange('warVersion', e.target.value)}
+                                className="w-full text-xs px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                              />
+                            </td>
+                            <td className="p-1">
+                              <input
+                                type="text"
+                                value={editForm.jarVersion || ''}
+                                onChange={(e) => handleEditChange('jarVersion', e.target.value)}
+                                className="w-full text-xs px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                              />
+                            </td>
+                            <td className="p-1">
+                              <input
+                                type="text"
+                                value={editForm.frontendVersion || ''}
+                                onChange={(e) => handleEditChange('frontendVersion', e.target.value)}
+                                className="w-full text-xs px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                              />
+                            </td>
+                            <td className="p-1">
+                              <input
+                                type="text"
+                                value={editForm.backendVersion || ''}
+                                onChange={(e) => handleEditChange('backendVersion', e.target.value)}
+                                className="w-full text-xs px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                              />
+                            </td>
+                            <td className="p-1">
+                              <input
+                                type="text"
+                                value={editForm.vprobeVersion || ''}
+                                onChange={(e) => handleEditChange('vprobeVersion', e.target.value)}
+                                className="w-full text-xs px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                              />
+                            </td>
+                            <td className="p-1">
+                              <input
+                                type="text"
+                                value={editForm.scriptVersion || ''}
+                                onChange={(e) => handleEditChange('scriptVersion', e.target.value)}
+                                className="w-full text-xs px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                              />
+                            </td>
+                            <td className="p-1">
+                              <input
+                                type="text"
+                                value={editForm.bpmVersion || ''}
+                                onChange={(e) => handleEditChange('bpmVersion', e.target.value)}
                                 className="w-full text-xs px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
                               />
                             </td>
@@ -457,7 +516,7 @@ export default function SubVersionTable({
                     {/* Group Empty */}
                     {!isCollapsed && groupRows.length === 0 && (
                       <tr>
-                        <td colSpan={11} className="py-4 text-center text-gray-400 italic bg-slate-50/50">
+                        <td colSpan={17} className="py-4 text-center text-gray-400 italic bg-slate-50/50">
                           本版本下暂无测试包及RC记录
                         </td>
                       </tr>

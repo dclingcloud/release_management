@@ -164,7 +164,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04-CSY',
     componentVersion: 'ngpm-26.04.1.3',
     imageName: 'NGPM-N26040103-CSY',
-    buildLink: '26.04.1.3-61120-meson',
+    warVersion: 'v26.04.1.3',
+    jarVersion: 'v2.4.3',
+    frontendVersion: 'v1.3.1',
+    backendVersion: 'v2.0.1',
+    vprobeVersion: 'v1.0.8',
+    scriptVersion: 'v3.2',
+    bpmVersion: 'v2.1'
   },
 
   // Sub-versions for N26040104 (m1)
@@ -179,7 +185,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04',
     componentVersion: 'ngpm-26.04.1.4',
     imageName: 'NGPM-N26040104-RC1',
-    buildLink: '26.04.1.4-61843-meson',
+    warVersion: 'v26.04.1.4-war',
+    jarVersion: 'v2.5.0',
+    frontendVersion: 'v1.4.0',
+    backendVersion: 'v2.1.0',
+    vprobeVersion: 'v1.1.0',
+    scriptVersion: 'v3.3',
+    bpmVersion: 'v2.2'
   },
   {
     id: 's_n1_2',
@@ -192,7 +204,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04',
     componentVersion: 'ngpm-26.04.1.4',
     imageName: 'NGPM-N26040104-RC2',
-    buildLink: '26.04.1.4-61852-meson',
+    warVersion: 'v26.04.1.4-war',
+    jarVersion: 'v2.5.1',
+    frontendVersion: 'v1.4.1',
+    backendVersion: 'v2.1.1',
+    vprobeVersion: 'v1.1.1',
+    scriptVersion: 'v3.3',
+    bpmVersion: 'v2.2'
   },
   {
     id: 's_n1_3',
@@ -205,7 +223,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04',
     componentVersion: 'ngpm-26.04.1.4',
     imageName: 'NGPM-N26040104-RC3',
-    buildLink: '26.04.1.4-61877-meson',
+    warVersion: 'v26.04.1.4-war',
+    jarVersion: 'v2.5.2',
+    frontendVersion: 'v1.4.2',
+    backendVersion: 'v2.1.2',
+    vprobeVersion: 'v1.1.2',
+    scriptVersion: 'v3.4',
+    bpmVersion: 'v2.2'
   },
   {
     id: 's_n1_4',
@@ -218,7 +242,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04',
     componentVersion: 'ngpm-26.04.1.4',
     imageName: 'NGPM-N26040104-RC4',
-    buildLink: '26.04.1.4-61931-meson',
+    warVersion: 'v26.04.1.4-war',
+    jarVersion: 'v2.5.3',
+    frontendVersion: 'v1.4.3',
+    backendVersion: 'v2.1.3',
+    vprobeVersion: 'v1.1.3',
+    scriptVersion: 'v3.4',
+    bpmVersion: 'v2.3'
   },
   {
     id: 's_n1_5',
@@ -231,7 +261,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04',
     componentVersion: 'ngpm-26.04.1.4',
     imageName: 'NGPM-N26040104-RC5',
-    buildLink: '26.04.1.4-61950-meson',
+    warVersion: 'v26.04.1.4-war',
+    jarVersion: 'v2.5.4',
+    frontendVersion: 'v1.4.4',
+    backendVersion: 'v2.1.4',
+    vprobeVersion: 'v1.1.4',
+    scriptVersion: 'v3.5',
+    bpmVersion: 'v2.3'
   },
   {
     id: 's_n1_6',
@@ -244,7 +280,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04',
     componentVersion: 'ngpm-26.04.1.4',
     imageName: 'NGPM-N26040104-RC6',
-    buildLink: '',
+    warVersion: 'v26.04.1.4-war',
+    jarVersion: 'v2.5.5',
+    frontendVersion: 'v1.4.5',
+    backendVersion: 'v2.1.5',
+    vprobeVersion: 'v1.1.5',
+    scriptVersion: 'v3.5',
+    bpmVersion: 'v2.3'
   },
   {
     id: 's_n1_7',
@@ -257,7 +299,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04',
     componentVersion: 'ngpm-26.04.1.4',
     imageName: 'NGPM-N26040104-RC7',
-    buildLink: '',
+    warVersion: 'v26.04.1.4-war',
+    jarVersion: 'v2.5.6',
+    frontendVersion: 'v1.4.6',
+    backendVersion: 'v2.1.6',
+    vprobeVersion: 'v1.1.6',
+    scriptVersion: 'v3.6',
+    bpmVersion: 'v2.4'
   },
   {
     id: 's_n1_8',
@@ -270,7 +318,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04',
     componentVersion: 'ngpm-26.04.1.4',
     imageName: 'NGPM-N26040104',
-    buildLink: '26.04.1.4-61977-meson',
+    warVersion: 'v26.04.1.4-release',
+    jarVersion: 'v2.5.7',
+    frontendVersion: 'v1.4.7',
+    backendVersion: 'v2.1.7',
+    vprobeVersion: 'v1.1.7',
+    scriptVersion: 'v3.6',
+    bpmVersion: 'v2.4'
   },
 
   // Sub-versions for PSBC-N26040102 (m5)
@@ -285,7 +339,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04.1.2-PSBC',
     componentVersion: 'ngpm-26.04.1.2-psbc',
     imageName: 'NGPM-N26040102-PSBC.RC1',
-    buildLink: '26.04.1.2-61341-meson',
+    warVersion: 'v26.04.1.2-psbc',
+    jarVersion: 'v2.2.0',
+    frontendVersion: 'v1.2.0',
+    backendVersion: 'v2.2.0',
+    vprobeVersion: 'v1.0.0',
+    scriptVersion: 'v3.0',
+    bpmVersion: 'v2.0'
   },
   {
     id: 's_psbc_2',
@@ -298,7 +358,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04.1.2-PSBC',
     componentVersion: 'ngpm-26.04.1.2-psbc',
     imageName: 'NGPM-N26040102-PSBC.RC2',
-    buildLink: '26.04.1.2-61527-meson',
+    warVersion: 'v26.04.1.2-psbc',
+    jarVersion: 'v2.2.1',
+    frontendVersion: 'v1.2.1',
+    backendVersion: 'v2.2.1',
+    vprobeVersion: 'v1.0.1',
+    scriptVersion: 'v3.0',
+    bpmVersion: 'v2.0'
   },
   {
     id: 's_psbc_3',
@@ -311,7 +377,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04.1.2-PSBC',
     componentVersion: 'ngpm-26.04.1.2-psbc',
     imageName: 'NGPM-N26040102-PSBC.RC3',
-    buildLink: '26.04.1.2-61623-meson',
+    warVersion: 'v26.04.1.2-psbc',
+    jarVersion: 'v2.2.2',
+    frontendVersion: 'v1.2.2',
+    backendVersion: 'v2.2.2',
+    vprobeVersion: 'v1.0.2',
+    scriptVersion: 'v3.1',
+    bpmVersion: 'v2.0'
   },
   {
     id: 's_psbc_4',
@@ -324,7 +396,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04.1.2-PSBC',
     componentVersion: 'ngpm-26.04.1.2-psbc',
     imageName: 'NGPM-N26040102-PSBC.RC4',
-    buildLink: '26.04.1.2-61633-meson',
+    warVersion: 'v26.04.1.2-psbc',
+    jarVersion: 'v2.2.3',
+    frontendVersion: 'v1.2.3',
+    backendVersion: 'v2.2.3',
+    vprobeVersion: 'v1.0.3',
+    scriptVersion: 'v3.1',
+    bpmVersion: 'v2.0'
   },
   {
     id: 's_psbc_5',
@@ -337,7 +415,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04.1.2-PSBC',
     componentVersion: 'ngpm-26.04.1.2-psbc',
     imageName: 'NGPM-N26040102-PSBC.RC5',
-    buildLink: '',
+    warVersion: 'v26.04.1.2-psbc',
+    jarVersion: 'v2.2.4',
+    frontendVersion: 'v1.2.4',
+    backendVersion: 'v2.2.4',
+    vprobeVersion: 'v1.0.4',
+    scriptVersion: 'v3.2',
+    bpmVersion: 'v2.1'
   },
   {
     id: 's_psbc_6',
@@ -350,7 +434,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04.1.2-PSBC',
     componentVersion: 'ngpm-26.04.1.2-psbc',
     imageName: 'NGPM-N26040102-PSBC.RC6',
-    buildLink: '',
+    warVersion: 'v26.04.1.2-psbc',
+    jarVersion: 'v2.2.5',
+    frontendVersion: 'v1.2.5',
+    backendVersion: 'v2.2.5',
+    vprobeVersion: 'v1.0.5',
+    scriptVersion: 'v3.2',
+    bpmVersion: 'v2.1'
   },
   {
     id: 's_psbc_7',
@@ -363,7 +453,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04.1.2-PSBC',
     componentVersion: 'ngpm-26.04.1.2-psbc',
     imageName: 'NGPM-N26040102-PSBC.RC7',
-    buildLink: '26.04.1.2-61663-meson',
+    warVersion: 'v26.04.1.2-psbc',
+    jarVersion: 'v2.2.6',
+    frontendVersion: 'v1.2.6',
+    backendVersion: 'v2.2.6',
+    vprobeVersion: 'v1.0.6',
+    scriptVersion: 'v3.3',
+    bpmVersion: 'v2.1'
   },
   {
     id: 's_psbc_8',
@@ -376,7 +472,13 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04.1.2-PSBC',
     componentVersion: 'ngpm-26.04.1.2-psbc',
     imageName: 'NGPM-N26040102-PSBC.RC8',
-    buildLink: '',
+    warVersion: 'v26.04.1.2-psbc',
+    jarVersion: 'v2.2.7',
+    frontendVersion: 'v1.2.7',
+    backendVersion: 'v2.2.7',
+    vprobeVersion: 'v1.0.7',
+    scriptVersion: 'v3.3',
+    bpmVersion: 'v2.1'
   },
   {
     id: 's_psbc_9',
@@ -389,6 +491,12 @@ export const initialSubVersions: SubVersion[] = [
     branch: '26.04.1.2-PSBC',
     componentVersion: 'ngpm-26.04.1.2-psbc',
     imageName: 'NGPM-N26040102-PSBC-RELEASE',
-    buildLink: '26.04.1.2-61988-meson',
+    warVersion: 'v26.04.1.2-psbc-release',
+    jarVersion: 'v2.2.8',
+    frontendVersion: 'v1.2.8',
+    backendVersion: 'v2.2.8',
+    vprobeVersion: 'v1.0.8',
+    scriptVersion: 'v3.4',
+    bpmVersion: 'v2.2'
   },
 ];

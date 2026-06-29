@@ -66,7 +66,14 @@ db.exec(`
     buildLinkUrl TEXT,
     jenkinsStatus TEXT DEFAULT 'idle',
     jenkinsBuildLog TEXT,
-    ftpUrl TEXT
+    ftpUrl TEXT,
+    warVersion TEXT,
+    jarVersion TEXT,
+    frontendVersion TEXT,
+    backendVersion TEXT,
+    vprobeVersion TEXT,
+    scriptVersion TEXT,
+    bpmVersion TEXT
   );
 `);
 
@@ -86,6 +93,27 @@ try {
 try {
   db.exec("ALTER TABLE sub_versions ADD COLUMN ftpUrl TEXT;");
 } catch (e) {}
+try {
+  db.exec("ALTER TABLE sub_versions ADD COLUMN warVersion TEXT;");
+} catch (e) {}
+try {
+  db.exec("ALTER TABLE sub_versions ADD COLUMN jarVersion TEXT;");
+} catch (e) {}
+try {
+  db.exec("ALTER TABLE sub_versions ADD COLUMN frontendVersion TEXT;");
+} catch (e) {}
+try {
+  db.exec("ALTER TABLE sub_versions ADD COLUMN backendVersion TEXT;");
+} catch (e) {}
+try {
+  db.exec("ALTER TABLE sub_versions ADD COLUMN vprobeVersion TEXT;");
+} catch (e) {}
+try {
+  db.exec("ALTER TABLE sub_versions ADD COLUMN scriptVersion TEXT;");
+} catch (e) {}
+try {
+  db.exec("ALTER TABLE sub_versions ADD COLUMN bpmVersion TEXT;");
+} catch (e) {}
 
 // Initialize default data if tables are empty
 const countMajor = db.prepare("SELECT COUNT(*) as count FROM major_versions").get() as { count: number };
@@ -98,8 +126,8 @@ if (countMajor.count === 0) {
   
   const insertSub = db.prepare(`
     INSERT INTO sub_versions (
-      id, majorVersionId, majorVersionNumber, subVersionNumber, status, description, buildDate, branch, componentVersion, imageName, buildLink, buildLinkUrl, jenkinsStatus, jenkinsBuildLog, ftpUrl
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      id, majorVersionId, majorVersionNumber, subVersionNumber, status, description, buildDate, branch, componentVersion, imageName, buildLink, buildLinkUrl, jenkinsStatus, jenkinsBuildLog, ftpUrl, warVersion, jarVersion, frontendVersion, backendVersion, vprobeVersion, scriptVersion, bpmVersion
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   
   const transaction = db.transaction(() => {
@@ -133,11 +161,18 @@ if (countMajor.count === 0) {
         s.branch,
         s.componentVersion,
         s.imageName,
-        s.buildLink,
-        s.buildLinkUrl || null,
+        '',
+        null,
         'idle',
         null,
-        null
+        null,
+        s.warVersion || null,
+        s.jarVersion || null,
+        s.frontendVersion || null,
+        s.backendVersion || null,
+        s.vprobeVersion || null,
+        s.scriptVersion || null,
+        s.bpmVersion || null
       );
     }
   });
@@ -284,8 +319,8 @@ app.post("/api/sub-versions", (req, res) => {
     
     db.prepare(`
       INSERT INTO sub_versions (
-        id, majorVersionId, majorVersionNumber, subVersionNumber, status, description, buildDate, branch, componentVersion, imageName, buildLink, buildLinkUrl, jenkinsStatus, jenkinsBuildLog, ftpUrl
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, majorVersionId, majorVersionNumber, subVersionNumber, status, description, buildDate, branch, componentVersion, imageName, buildLink, buildLinkUrl, jenkinsStatus, jenkinsBuildLog, ftpUrl, warVersion, jarVersion, frontendVersion, backendVersion, vprobeVersion, scriptVersion, bpmVersion
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       newSub.id,
       newSub.majorVersionId,
@@ -297,11 +332,18 @@ app.post("/api/sub-versions", (req, res) => {
       newSub.branch,
       newSub.componentVersion,
       newSub.imageName,
-      newSub.buildLink,
-      newSub.buildLinkUrl || null,
+      '',
+      null,
       newSub.jenkinsStatus || 'idle',
       newSub.jenkinsBuildLog || null,
-      newSub.ftpUrl || null
+      null,
+      newSub.warVersion || null,
+      newSub.jarVersion || null,
+      newSub.frontendVersion || null,
+      newSub.backendVersion || null,
+      newSub.vprobeVersion || null,
+      newSub.scriptVersion || null,
+      newSub.bpmVersion || null
     );
     
     res.status(201).json(newSub);
@@ -335,7 +377,14 @@ app.put("/api/sub-versions/:id", (req, res) => {
         buildLinkUrl = ?,
         jenkinsStatus = ?,
         jenkinsBuildLog = ?,
-        ftpUrl = ?
+        ftpUrl = ?,
+        warVersion = ?,
+        jarVersion = ?,
+        frontendVersion = ?,
+        backendVersion = ?,
+        vprobeVersion = ?,
+        scriptVersion = ?,
+        bpmVersion = ?
       WHERE id = ?
     `).run(
       updatedSub.majorVersionId,
@@ -347,11 +396,18 @@ app.put("/api/sub-versions/:id", (req, res) => {
       updatedSub.branch,
       updatedSub.componentVersion,
       updatedSub.imageName,
-      updatedSub.buildLink,
-      updatedSub.buildLinkUrl || null,
+      '',
+      null,
       updatedSub.jenkinsStatus || 'idle',
       updatedSub.jenkinsBuildLog || null,
-      updatedSub.ftpUrl || null,
+      null,
+      updatedSub.warVersion || null,
+      updatedSub.jarVersion || null,
+      updatedSub.frontendVersion || null,
+      updatedSub.backendVersion || null,
+      updatedSub.vprobeVersion || null,
+      updatedSub.scriptVersion || null,
+      updatedSub.bpmVersion || null,
       id
     );
     
@@ -386,8 +442,8 @@ app.post("/api/reset", (req, res) => {
       
       const insertSub = db.prepare(`
         INSERT INTO sub_versions (
-          id, majorVersionId, majorVersionNumber, subVersionNumber, status, description, buildDate, branch, componentVersion, imageName, buildLink, buildLinkUrl, jenkinsStatus, jenkinsBuildLog, ftpUrl
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          id, majorVersionId, majorVersionNumber, subVersionNumber, status, description, buildDate, branch, componentVersion, imageName, buildLink, buildLinkUrl, jenkinsStatus, jenkinsBuildLog, ftpUrl, warVersion, jarVersion, frontendVersion, backendVersion, vprobeVersion, scriptVersion, bpmVersion
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       
       for (const v of initialMajorVersions) {
@@ -420,11 +476,18 @@ app.post("/api/reset", (req, res) => {
           s.branch,
           s.componentVersion,
           s.imageName,
-          s.buildLink,
-          s.buildLinkUrl || null,
+          '',
+          null,
           'idle',
           null,
-          null
+          null,
+          s.warVersion || null,
+          s.jarVersion || null,
+          s.frontendVersion || null,
+          s.backendVersion || null,
+          s.vprobeVersion || null,
+          s.scriptVersion || null,
+          s.bpmVersion || null
         );
       }
     });
@@ -453,8 +516,8 @@ app.post("/api/import", (req, res) => {
         
         const insertSub = db.prepare(`
           INSERT INTO sub_versions (
-            id, majorVersionId, majorVersionNumber, subVersionNumber, status, description, buildDate, branch, componentVersion, imageName, buildLink, buildLinkUrl, jenkinsStatus, jenkinsBuildLog, ftpUrl
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            id, majorVersionId, majorVersionNumber, subVersionNumber, status, description, buildDate, branch, componentVersion, imageName, buildLink, buildLinkUrl, jenkinsStatus, jenkinsBuildLog, ftpUrl, warVersion, jarVersion, frontendVersion, backendVersion, vprobeVersion, scriptVersion, bpmVersion
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
         
         for (const v of majorVersions) {
@@ -487,11 +550,18 @@ app.post("/api/import", (req, res) => {
             s.branch,
             s.componentVersion,
             s.imageName,
-            s.buildLink,
-            s.buildLinkUrl || null,
+            '',
+            null,
             s.jenkinsStatus || 'idle',
             s.jenkinsBuildLog || null,
-            s.ftpUrl || null
+            null,
+            s.warVersion || null,
+            s.jarVersion || null,
+            s.frontendVersion || null,
+            s.backendVersion || null,
+            s.vprobeVersion || null,
+            s.scriptVersion || null,
+            s.bpmVersion || null
           );
         }
       });
