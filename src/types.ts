@@ -11,6 +11,8 @@ export interface MajorVersion {
   nextStageRDDDL?: string; // target RDD DL date
   nextStageQADDL?: string; // target QA DL date
   details?: string; // Additional descriptions/notes
+  ftpUrl?: string; // FTP release file download URL
+  aiReview?: string; // Cached AI Review
 }
 
 export interface SubVersion {
@@ -26,6 +28,9 @@ export interface SubVersion {
   imageName: string; // e.g. "NGPM-N26040104-RC1"
   buildLink: string; // e.g. "26.04.1.4-61843-meson"
   buildLinkUrl?: string; // Optional actual URL
+  jenkinsStatus?: 'idle' | 'building' | 'success' | 'failed'; // Jenkins trigger state
+  jenkinsBuildLog?: string; // Live log content
+  ftpUrl?: string; // FTP package link
 }
 
 export type ViewType = 'major' | 'published' | 'dashboard';

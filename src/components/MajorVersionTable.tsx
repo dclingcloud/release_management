@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   ChevronDown, ChevronRight, Plus, Search, Filter, ArrowUpDown, Eye, Trash2, 
   Settings, Type, Calendar, User, AlignLeft, ShieldCheck, FileText, BadgeAlert, AlertCircle,
-  FileEdit
+  FileEdit, Play, Terminal, Loader2, Download, Copy, Check
 } from 'lucide-react';
 import { MajorVersion, SubVersion } from '../types';
 import { initialOwners, ownerAvatars } from '../initialData';
@@ -50,6 +50,77 @@ export default function MajorVersionTable({
   // Track subversion inline edit state inside the nested tables
   const [editingSubId, setEditingSubId] = useState<string | null>(null);
   const [editSubForm, setEditSubForm] = useState<SubVersion | null>(null);
+
+  // Jenkins build & terminal log state
+  const [activeLogSubId, setActiveLogSubId] = useState<string | null>(null);
+  const [activeLogContent, setActiveLogContent] = useState<string>('');
+  const [copiedText, setCopiedText] = useState(false);
+
+  // Track active polling intervals
+  const activePollers = React.useRef<Record<string, NodeJS.Timeout>>({});
+
+  // Poll for building sub-versions automatically if any are building on load
+  useEffect(() => {
+    subVersions.forEach(sub => {
+      if (sub.jenkinsStatus === 'building' && !activePollers.current[sub.id]) {
+        startPollingSub(sub.id);
+      }
+    });
+
+    return () => {
+      // Clean up pollers
+      Object.values(activePollers.current).forEach(clearInterval);
+    };
+  }, [subVersions]);
+
+  // Keep active log modal content in sync with polling updates
+  useEffect(() => {
+    if (activeLogSubId) {
+      const currentSub = subVersions.find(s => s.id === activeLogSubId);
+      if (currentSub) {
+        setActiveLogContent(currentSub.jenkinsBuildLog || '等待控制台输出...');
+      }
+    }
+  }, [subVersions, activeLogSubId]);
+
+  const startPollingSub = (subId: string) => {
+    if (activePollers.current[subId]) clearInterval(activePollers.current[subId]);
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/sub-versions');
+        if (res.ok) {
+          const subs = await res.json() as SubVersion[];
+          const target = subs.find(s => s.id === subId);
+          if (target) {
+            if (onEditSubVersion) onEditSubVersion(target);
+            if (target.jenkinsStatus !== 'building') {
+              clearInterval(interval);
+              delete activePollers.current[subId];
+            }
+          }
+        }
+      } catch (err) {
+        clearInterval(interval);
+        delete activePollers.current[subId];
+      }
+    }, 1000);
+
+    activePollers.current[subId] = interval;
+  };
+
+  const handleTriggerBuild = async (subId: string) => {
+    try {
+      const res = await fetch(`/api/sub-versions/${subId}/trigger-build`, { method: 'POST' });
+      if (res.ok) {
+        const updatedSub = await res.json();
+        if (onEditSubVersion) onEditSubVersion(updatedSub);
+        startPollingSub(subId);
+      }
+    } catch (err) {
+      console.error("Failed to trigger build:", err);
+    }
+  };
 
   const toggleRowExpand = (rowId: string) => {
     setExpandedRowIds(prev => ({
@@ -599,18 +670,20 @@ export default function MajorVersionTable({
                                     </div>
                                   ) : (
                                     <div className="overflow-x-auto rounded-lg border border-gray-100 bg-slate-50 shadow-xs">
-                                      <table className="w-full text-left border-collapse table-fixed min-w-[1000px]">
+                                      <table className="w-full text-left border-collapse table-fixed min-w-[1200px]">
                                         <thead>
                                           <tr className="bg-slate-100/80 text-gray-500 font-semibold text-[10px] border-b border-gray-200">
                                             <th className="w-10 py-2.5 px-2 text-center text-gray-400">#</th>
                                             <th className="w-40 py-2.5 px-3 text-gray-600 font-bold">RC版本号</th>
                                             <th className="w-24 py-2.5 px-3 text-gray-600">测试状态</th>
-                                            <th className="w-56 py-2.5 px-3 text-gray-600">修复缺陷/需求说明</th>
+                                            <th className="w-52 py-2.5 px-3 text-gray-600">修复缺陷/需求说明</th>
                                             <th className="w-28 py-2.5 px-3 text-gray-600">打包日期</th>
                                             <th className="w-24 py-2.5 px-3 text-gray-600">代码分支</th>
                                             <th className="w-36 py-2.5 px-3 text-gray-600">组件版本</th>
-                                            <th className="w-48 py-2.5 px-3 text-gray-600">下属容器镜像名称</th>
-                                            <th className="w-32 py-2.5 px-3 text-gray-600">构建包链接</th>
+                                            <th className="w-44 py-2.5 px-3 text-gray-600">下属容器镜像名称</th>
+                                            <th className="w-28 py-2.5 px-3 text-gray-600">构建包链接</th>
+                                            <th className="w-44 py-2.5 px-3 text-gray-600">编译构建 (Jenkins)</th>
+                                            <th className="w-36 py-2.5 px-3 text-gray-600">FTP 交付包</th>
                                             <th className="w-20 py-2.5 px-2 text-center text-gray-400">操作</th>
                                           </tr>
                                         </thead>
@@ -691,6 +764,18 @@ export default function MajorVersionTable({
                                                       className="w-full text-[11px] px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
                                                     />
                                                   </td>
+                                                  <td className="p-1 text-center text-gray-400">
+                                                    -
+                                                  </td>
+                                                  <td className="p-1">
+                                                    <input
+                                                      type="text"
+                                                      value={editSubForm.ftpUrl || ''}
+                                                      onChange={(e) => handleSubEditChange('ftpUrl', e.target.value)}
+                                                      placeholder="ftp://..."
+                                                      className="w-full text-[11px] px-1.5 py-1 border border-gray-200 rounded-sm bg-white font-mono"
+                                                    />
+                                                  </td>
                                                   <td className="p-1 text-center">
                                                     <div className="flex items-center justify-center gap-1">
                                                       <button
@@ -753,6 +838,91 @@ export default function MajorVersionTable({
                                                     <span className="text-gray-300">-</span>
                                                   )}
                                                 </td>
+                                                
+                                                {/* Jenkins Build Action */}
+                                                <td className="py-2 px-3">
+                                                  <div className="flex items-center gap-1.5">
+                                                    {sub.jenkinsStatus === 'building' ? (
+                                                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-amber-50 text-amber-700 border border-amber-200 text-[10px] animate-pulse">
+                                                        <Loader2 size={10} className="animate-spin text-amber-600 shrink-0" />
+                                                        <span>构建中...</span>
+                                                      </span>
+                                                    ) : sub.jenkinsStatus === 'success' ? (
+                                                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px]">
+                                                        <span>构建成功</span>
+                                                      </span>
+                                                    ) : sub.jenkinsStatus === 'failed' ? (
+                                                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-rose-50 text-rose-700 border border-rose-100 text-[10px]">
+                                                        <span>构建失败</span>
+                                                      </span>
+                                                    ) : (
+                                                      <span className="text-gray-400 text-[10px]">未构建</span>
+                                                    )}
+
+                                                    <div className="flex items-center gap-1">
+                                                      <button
+                                                        type="button"
+                                                        disabled={sub.jenkinsStatus === 'building'}
+                                                        onClick={() => handleTriggerBuild(sub.id)}
+                                                        className={`p-1 rounded-md transition ${
+                                                          sub.jenkinsStatus === 'building' 
+                                                            ? 'text-gray-300 bg-slate-100 cursor-not-allowed' 
+                                                            : 'text-blue-600 hover:bg-blue-50 hover:text-blue-700'
+                                                        }`}
+                                                        title={sub.jenkinsStatus ? "重新触发构建" : "一键触发 Jenkins 编译"}
+                                                      >
+                                                        <Play size={11} className={sub.jenkinsStatus === 'building' ? '' : 'fill-current'} />
+                                                      </button>
+
+                                                      {sub.jenkinsBuildLog && (
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => {
+                                                            setActiveLogSubId(sub.id);
+                                                            setActiveLogContent(sub.jenkinsBuildLog || '');
+                                                          }}
+                                                          className="p-1 text-slate-500 hover:bg-slate-200 rounded-md transition"
+                                                          title="查看构建日志 (Terminal)"
+                                                        >
+                                                          <Terminal size={11} />
+                                                        </button>
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                </td>
+
+                                                {/* FTP download column */}
+                                                <td className="py-2 px-3">
+                                                  {sub.ftpUrl ? (
+                                                    <div className="flex items-center gap-1">
+                                                      <a
+                                                        href={sub.ftpUrl}
+                                                        target="_blank"
+                                                        referrerPolicy="no-referrer"
+                                                        rel="noreferrer"
+                                                        className="inline-flex items-center gap-0.5 text-blue-600 hover:text-blue-800 hover:underline font-medium text-[10px] truncate max-w-[120px]"
+                                                        title={`FTP 交付包: ${sub.ftpUrl}`}
+                                                      >
+                                                        <Download size={10} />
+                                                        <span>FTP交付包</span>
+                                                      </a>
+                                                      <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                          navigator.clipboard.writeText(sub.ftpUrl || '');
+                                                          alert('已复制 FTP 链接到剪贴板');
+                                                        }}
+                                                        className="p-0.5 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-600 shrink-0"
+                                                        title="复制 FTP 链接"
+                                                      >
+                                                        <Copy size={9} />
+                                                      </button>
+                                                    </div>
+                                                  ) : (
+                                                    <span className="text-gray-300 italic">未发布交付件</span>
+                                                  )}
+                                                </td>
+
                                                 <td className="py-2 px-2 text-center">
                                                   <div className="flex items-center justify-center gap-1 opacity-0 group-hover/subrow:opacity-100 transition duration-150">
                                                     <button
@@ -806,6 +976,72 @@ export default function MajorVersionTable({
 
         </div>
       </div>
+
+      {/* Jenkins Terminal Live Logs Dialog */}
+      {activeLogSubId && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-950 text-slate-100 rounded-lg w-full max-w-3xl h-[500px] border border-slate-800 flex flex-col shadow-2xl overflow-hidden font-mono text-xs">
+            {/* Terminal Header */}
+            <div className="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+                <span className="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                <span className="text-slate-400 text-xs font-semibold select-none ml-2">Jenkins Console Logs</span>
+              </div>
+              <button 
+                onClick={() => {
+                  setActiveLogSubId(null);
+                  setActiveLogContent('');
+                }}
+                className="text-slate-400 hover:text-slate-200 transition"
+              >
+                ✕
+              </button>
+            </div>
+            {/* Terminal Body */}
+            <div className="flex-1 p-4 overflow-y-auto bg-slate-950 text-slate-200 space-y-1 select-text selection:bg-slate-800">
+              <div className="text-emerald-500 font-bold mb-2"># jenkins --job=build_rc_version --id={activeLogSubId}</div>
+              {activeLogContent.split('\n').map((line, lIdx) => (
+                <div key={lIdx} className="leading-5 whitespace-pre-wrap">{line}</div>
+              ))}
+              {/* If building, show a dynamic loading indicator line */}
+              {subVersions.find(s => s.id === activeLogSubId)?.jenkinsStatus === 'building' && (
+                <div className="text-amber-500 font-semibold animate-pulse flex items-center gap-1 mt-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping inline-block"></span>
+                  [Pipeline] Building... polling latest console output...
+                </div>
+              )}
+            </div>
+            {/* Terminal Footer */}
+            <div className="bg-slate-900 px-4 py-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500 select-none">
+              <span>Status: {subVersions.find(s => s.id === activeLogSubId)?.jenkinsStatus === 'building' ? 'BUILDING' : 'COMPLETED'}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(activeLogContent);
+                  setCopiedText(true);
+                  setTimeout(() => setCopiedText(false), 2000);
+                }}
+                className="flex items-center gap-1 text-slate-400 hover:text-slate-200 transition"
+              >
+                {copiedText ? (
+                  <>
+                    <Check size={12} className="text-emerald-500" />
+                    <span>已复制</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy size={12} />
+                    <span>复制日志</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, Trash2, Calendar, User, Tag, ExternalLink, Hash, Clock, FileText, CheckCircle2 } from 'lucide-react';
+import { X, Plus, Trash2, Calendar, User, Tag, ExternalLink, Hash, Clock, FileText, CheckCircle2, Loader2, ShieldCheck } from 'lucide-react';
 import { MajorVersion, SubVersion } from '../types';
 import { initialOwners, ownerAvatars } from '../initialData';
 
@@ -26,10 +26,76 @@ export default function VersionDetailDrawer({
 }: VersionDetailDrawerProps) {
   if (!isOpen || !version) return null;
 
+  // Filter sub-versions belonging to this major version
+  const associatedSubs = subVersions.filter(sv => sv.majorVersionId === version.id);
+
   // Local state for main version fields to avoid re-rendering parent on every keystroke
   const [formData, setFormData] = useState<MajorVersion>({ ...version });
   const [editingSubId, setEditingSubId] = useState<string | null>(null);
   const [subFormData, setSubFormData] = useState<SubVersion | null>(null);
+
+  // AI states
+  const [aiReleaseNotes, setAiReleaseNotes] = useState<string>('');
+  const [aiRiskAssessment, setAiRiskAssessment] = useState<string>('');
+  const [isLoadingReleaseNotes, setIsLoadingReleaseNotes] = useState(false);
+  const [isLoadingRisk, setIsLoadingRisk] = useState(false);
+
+  // Clear AI states when selecting a new version
+  React.useEffect(() => {
+    setAiReleaseNotes('');
+    setAiRiskAssessment('');
+  }, [version?.id]);
+
+  const handleGenerateReleaseNotes = async () => {
+    setIsLoadingReleaseNotes(true);
+    setAiReleaseNotes('');
+    try {
+      const res = await fetch('/api/ai/release-notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          versionNumber: formData.versionNumber,
+          subVersions: associatedSubs
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAiReleaseNotes(data.notes || '没有提炼出有效的发布日志');
+      } else {
+        setAiReleaseNotes('生成失败，请检查后端服务');
+      }
+    } catch (err) {
+      console.error(err);
+      setAiReleaseNotes('请求失败，请检查网络或服务连接');
+    } finally {
+      setIsLoadingReleaseNotes(false);
+    }
+  };
+
+  const handleGenerateRiskAssessment = async () => {
+    setIsLoadingRisk(true);
+    setAiRiskAssessment('');
+    try {
+      const res = await fetch('/api/ai/risk-assessment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          version: formData
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAiRiskAssessment(data.assessment || '没有提炼出有效的评估报告');
+      } else {
+        setAiRiskAssessment('分析评估失败，请检查后端服务');
+      }
+    } catch (err) {
+      console.error(err);
+      setAiRiskAssessment('请求失败，请检查网络或服务连接');
+    } finally {
+      setIsLoadingRisk(false);
+    }
+  };
 
   // Update form data if version prop changes
   React.useEffect(() => {
@@ -59,9 +125,6 @@ export default function VersionDetailDrawer({
       setSubFormData(null);
     }
   };
-
-  // Filter sub-versions belonging to this major version
-  const associatedSubs = subVersions.filter(sv => sv.majorVersionId === version.id);
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden" id="version-detail-drawer">
@@ -254,6 +317,18 @@ export default function VersionDetailDrawer({
                   rows={3}
                   className="w-full text-sm px-3 py-2 border border-gray-200 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
                   placeholder="输入此版本包含的核心需求或定制背景..."
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-500 flex items-center gap-1.5">
+                  <ExternalLink size={13} /> 大版本 FTP 交付物理路径 (若已发布)
+                </label>
+                <input
+                  type="text"
+                  value={formData.ftpUrl || ''}
+                  onChange={(e) => handleChange('ftpUrl', e.target.value)}
+                  className="w-full text-sm px-3 py-2 border border-gray-200 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-mono"
+                  placeholder="ftp://ftp.internal/release/..."
                 />
               </div>
             </div>
@@ -450,6 +525,124 @@ export default function VersionDetailDrawer({
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+
+          {/* Section 4: AI Intelligent Assistant Section */}
+          <div className="space-y-4 border-t border-slate-100 pt-6">
+            <div className="flex items-center gap-2">
+              <span className="p-1 rounded bg-blue-50 text-blue-600">
+                <ShieldCheck size={16} />
+              </span>
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                🤖 AI 智能协同交付专区
+              </h3>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                disabled={isLoadingReleaseNotes}
+                onClick={handleGenerateReleaseNotes}
+                className="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 hover:bg-blue-100 disabled:bg-slate-50 text-blue-700 disabled:text-gray-400 font-medium text-xs rounded-md transition shadow-2xs border border-blue-100 disabled:border-slate-100"
+              >
+                {isLoadingReleaseNotes ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    <span>正在提炼发布日志...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>✨ 智能生成 Release Notes</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                disabled={isLoadingRisk}
+                onClick={handleGenerateRiskAssessment}
+                className="flex items-center justify-center gap-2 px-3 py-2.5 bg-indigo-50 hover:bg-indigo-100 disabled:bg-slate-50 text-indigo-700 disabled:text-gray-400 font-medium text-xs rounded-md transition shadow-2xs border border-indigo-100 disabled:border-slate-100"
+              >
+                {isLoadingRisk ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    <span>正在评估风险排期...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>📊 智能风险排期双重评估</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Release Notes Output */}
+            {aiReleaseNotes && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span className="font-semibold text-gray-700">🤖 AI 提炼交付日志 (Release Notes)</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(aiReleaseNotes);
+                        alert('已成功复制发布日志到剪贴板');
+                      }}
+                      className="text-blue-600 hover:underline"
+                    >
+                      复制日志
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleChange('details', (formData.details || '') + '\n\n' + aiReleaseNotes);
+                        alert('已成功追加至下方大版本详情说明中');
+                      }}
+                      className="text-emerald-600 hover:underline"
+                    >
+                      追加至详情说明
+                    </button>
+                  </div>
+                </div>
+                <pre className="p-3.5 bg-slate-900 text-slate-200 rounded-md text-[11px] font-mono whitespace-pre-wrap leading-relaxed max-h-[300px] overflow-y-auto border border-slate-800 shadow-inner select-all">
+                  {aiReleaseNotes}
+                </pre>
+              </div>
+            )}
+
+            {/* Risk Assessment Output */}
+            {aiRiskAssessment && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span className="font-semibold text-gray-700">📊 AI 智能质量与排期风险评估报告</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(aiRiskAssessment);
+                        alert('已成功复制风险评估报告到剪贴板');
+                      }}
+                      className="text-blue-600 hover:underline"
+                    >
+                      复制评估
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleChange('meetingMinutes', (formData.meetingMinutes || '') + '\n\nAI风险提示:\n' + aiRiskAssessment);
+                        alert('已成功追加至上方会议纪要中');
+                      }}
+                      className="text-emerald-600 hover:underline"
+                    >
+                      追加至会议纪要
+                    </button>
+                  </div>
+                </div>
+                <pre className="p-3.5 bg-slate-900 text-slate-200 rounded-md text-[11px] font-mono whitespace-pre-wrap leading-relaxed max-h-[300px] overflow-y-auto border border-slate-800 shadow-inner select-all">
+                  {aiRiskAssessment}
+                </pre>
               </div>
             )}
           </div>
